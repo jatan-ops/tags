@@ -1,0 +1,28 @@
+.App {
+  font-family: sans-serif;
+  text-align: center;
+}
+
+pre {
+  font-family: Monaco, Menlo, Consolas, Courier New, monospace !important;
+  color: rgba(255, 255, 255, 0.822);
+  background-color: rgba(26, 29, 33, 0.9);
+  padding: 5px;
+  font-size: 105%;
+}
+
+img {
+  width: 90%;
+  height: auto;
+}
+
+blockquote {
+  background-color: rgba(61, 49, 49, 0.1);
+  padding: 5px;
+  font-style: italic;
+}
+
+iframe {
+  width: 30%;
+  height: 30vh;
+}
