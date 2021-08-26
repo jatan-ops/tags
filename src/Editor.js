@@ -1,5 +1,8 @@
 import ReactQuill from 'react-quill';
-import { useEffect } from 'react';
+import { useEffect,useState } from 'react';
+import firebase from 'firebase';
+import { db } from './firebase';
+
 
 let atValues = [];
 
@@ -51,12 +54,44 @@ const formats = [
   'mention'
 ];
 
-export default function Editor({ commentInput, handleChange, tags }) {
+export default function Editor({ tags }) {
+
+  const [commentInput, setCommentInput] = useState('');
+  const [jsonOutput, setJsonOutput] = useState({});
+
+  function onHandleSubmit(e) {
+    e.preventDefault();
+
+    let tagValues = [];
+
+    jsonOutput.ops.map((object) => {
+      if (typeof object.insert === 'object') {
+        tagValues.push(object.insert.mention.value);
+      }
+    });
+
+    db.collection('posts').add({
+      body: commentInput,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      tag: tagValues,
+      subThreads:[]
+    });
+
+    setCommentInput('');
+    setJsonOutput({});
+  }
+
+  function handleChange(content, delta, source, editor) {
+    setCommentInput(content);
+    setJsonOutput(editor.getContents());
+  }
+
   useEffect(() => {
     atValues = tags;
   }, [tags]);
 
   return (
+    <div>
     <div style={{ height: '20vh' }}>
       <ReactQuill
         style={{
@@ -71,6 +106,17 @@ export default function Editor({ commentInput, handleChange, tags }) {
         placeholder="Write your comment here"
         onChange={handleChange}
       />
+      
+     
     </div>
+     <button
+     style={{
+       margin: '10px',
+     }}
+     onClick={onHandleSubmit}
+   >
+     Post
+   </button>
+   </div>
   );
 }

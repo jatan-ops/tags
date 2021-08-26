@@ -21,44 +21,8 @@ export default function App() {
   const [tagInput, setTagInput] = useState('');
   const [tags, setTags] = useState([]);
 
-  const [commentInput, setCommentInput] = useState('');
-  const [jsonOutput, setJsonOutput] = useState({});
-
-  const [subCommentInput, setSubCommentInput] = useState('');
-  const [subCommentJson, setSubCommentJson] = useState({});
   const [editorStatus, setEditorStatus] = useState(false);
-  const [id, setId] = useState('');
 
-  function onHandleSubmit(e) {
-    e.preventDefault();
-
-    let tagValues = [];
-
-    jsonOutput.ops.map((object) => {
-      if (typeof object.insert === 'object') {
-        tagValues.push(object.insert.mention.value);
-      }
-    });
-
-    db.collection('posts').add({
-      body: commentInput,
-      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-      tag: tagValues
-    });
-
-    setCommentInput('');
-    setJsonOutput({});
-  }
-
-  function handleChange(content, delta, source, editor) {
-    setCommentInput(content);
-    setJsonOutput(editor.getContents());
-  }
-
-  function subCommentChange(content, delta, source, editor) {
-    setSubCommentInput(content);
-    setSubCommentJson(editor.getContents());
-  }
 
   function addTags() {
     db.collection('tags')
@@ -89,21 +53,18 @@ export default function App() {
   function addEditor(id) {
     ReactDOM.render(
       <Editor2
-        subCommentInput={subCommentInput}
-        subCommentChange={subCommentChange}
+        key={id} 
         tags={tags}
         id={id}
         closeSubCommentEditor={closeSubCommentEditor}
-        setSubCommentInput={setCommentInput}
-        setSubCommentJson={setSubCommentJson}
-        setId={setId}
+        setEditorStatus={setEditorStatus}
       />,
       document.getElementById(id)
     );
   }
 
   function closeSubCommentEditor(id) {
-    ReactDOM.render(<p></p>, document.getElementById(id));
+    ReactDOM.render(<span></span>, document.getElementById(id));
   }
 
   useEffect(() => {
@@ -112,7 +73,9 @@ export default function App() {
     db.collection('tags')
       .doc('tag')
       .onSnapshot((doc) => {
-        setTags(doc.data().myTags);
+        if(doc.exists){
+          setTags(doc.data().myTags);
+        }
       });
   }, []);
 
@@ -126,8 +89,6 @@ export default function App() {
       <button onClick={addTags}>Create new tag</button>
 
       <Editor
-        commentInput={commentInput}
-        handleChange={handleChange}
         tags={tags}
       />
 
@@ -151,15 +112,6 @@ export default function App() {
         })}
       </div>
 
-      <button
-        style={{
-          margin: '10px'
-        }}
-        onClick={onHandleSubmit}
-      >
-        Post
-      </button>
-
       {posts.map((post) => {
         return (
           <div
@@ -174,7 +126,6 @@ export default function App() {
               }}
               onClick={() => {
                 setEditorStatus(!editorStatus);
-                setId(post.id);
                 if (editorStatus) {
                   closeSubCommentEditor(post.id);
                 } else {

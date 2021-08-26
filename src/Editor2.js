@@ -1,7 +1,8 @@
 import ReactQuill from 'react-quill';
-import { useEffect } from 'react';
+import { useEffect,useState } from 'react';
 import { db } from './firebase';
 import firebase from 'firebase';
+
 
 let atValues = [];
 
@@ -54,17 +55,16 @@ const formats = [
 ];
 
 export default function Editor2({
-  subCommentInput,
-  subCommentChange,
   tags,
-  subCommentJson,
   id,
   closeSubCommentEditor,
-  setSubCommentInput,
-  setSubCommentJson,
-  setId
+  setEditorStatus
 }) {
-  function takeSubComment(id) {
+
+  const [subCommentJson,setSubCommentJson] = useState({});
+  const [subCommentInput, setSubCommentInput] = useState('');
+
+  function takeSubComment() {
     if (subCommentJson.hasOwnProperty('ops')) {
       let tagValues = [];
 
@@ -88,16 +88,23 @@ export default function Editor2({
     }
   }
 
+  function subCommentChange(content, delta, source, editor) {
+    // console.log('on change editor: ',editor.getContents())
+    setSubCommentInput(content);
+    setSubCommentJson(editor.getContents());
+  }
+
   useEffect(() => {
     atValues = tags;
   }, [tags]);
 
   return (
+    <div>
     <div style={{ height: '20vh' }}>
       <ReactQuill
         style={{
           width: '90%',
-          height: '15vh',
+          height: '13vh',
           fontSize: '18px',
           margin: '10px'
         }}
@@ -108,17 +115,19 @@ export default function Editor2({
         onChange={subCommentChange}
       />
 
-      <button
-        onClick={() => {
-          takeSubComment(id);
-          setSubCommentInput('');
-          setSubCommentJson({});
-          closeSubCommentEditor(id);
-          setId('');
-        }}
-      >
-        Post
-      </button>
+   
     </div>
+       <button
+       onClick={() => {
+         takeSubComment();
+         setSubCommentInput('');
+         setSubCommentJson({});
+         closeSubCommentEditor(id);
+         setEditorStatus(false)
+       }}
+     >
+       Post
+     </button>
+     </div>
   );
 }
